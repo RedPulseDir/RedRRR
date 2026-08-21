@@ -1,0 +1,63 @@
+#pragma once
+#include <cstdint>
+#include <Windows.h>
+
+// CS2 offsets.
+// Источник: a2x/cs2-dumper, дамп от 2026-08-20 07:13:18 UTC (game build актуальный на 2026-08-21)
+// https://github.com/a2x/cs2-dumper/blob/main/output/client_dll.hpp
+// https://github.com/a2x/cs2-dumper/blob/main/output/offsets.hpp
+// https://github.com/a2x/cs2-dumper/blob/main/output/buttons.hpp
+namespace offsets {
+    // client.dll  (offsets.hpp -> client_dll)
+    constexpr uintptr_t dwEntityList            = 0x2555050; // CGameEntitySystem*   (без изменений)
+    constexpr uintptr_t dwLocalPlayerController = 0x2384DB0; // CBasePlayerController* (без изменений)
+    constexpr uintptr_t dwLocalPlayerPawn       = 0x23AA118; // C_CSPlayerPawn* (опционально, из дампа)
+
+    // entity page-table base.
+    // ВНИМАНИЕ: отдельного dwEntityPageTable в дампе a2x нет — таблица страниц лежит
+    // внутри CGameEntitySystem: pageTable = *(client.dll + dwEntityList) + ENT_PAGE_TABLE_OFF
+    //   listEntry = *(pageTable + ENT_PAGE_STRIDE * ((idx & 0x7FFF) >> 9))
+    //   entity    = *(listEntry + ENT_SLOT_STRIDE * (idx & 0x1FF))
+    constexpr uintptr_t dwEntityPageTable  = dwEntityList; // было 0x21E3AB0 (устарело/не существует в дампе)
+    constexpr size_t    ENT_PAGE_TABLE_OFF = 0x10;
+    constexpr size_t    ENT_PAGE_STRIDE    = 8;
+    constexpr size_t    ENT_SLOT_STRIDE    = 120;  // sizeof(CEntityIdentity) = 0x78 (было 112 — устарело)
+    constexpr size_t    ENT_SLOT_HANDLE    = 16;   // CEntityIdentity::m_EHandle = 0x10
+
+    // CBasePlayerController netvar - pawn handle
+    constexpr uintptr_t m_hPawn = 0x6BC; // было 0x6D4
+
+    // C_BaseEntity netvars
+    constexpr uintptr_t m_fFlags           = 0x3F4; // было 0x3F8
+    constexpr uintptr_t m_vecVelocity      = 0x430;
+    constexpr uintptr_t m_hGroundEntity    = 0x530;
+    constexpr uint32_t  FL_ONGROUND        = 1 << 0;
+
+    // C_CSPlayerPawn
+    constexpr uintptr_t m_angEyeAngles         = 0x3350; // было 0x3360
+    constexpr uintptr_t m_angEyeAnglesVelocity = 0x3420; // было 0x3430
+
+    // C_BasePlayerPawn -> CPlayer_MovementServices
+    constexpr uintptr_t m_pMovementServices = 0x1248; // было 0x1220
+
+    // CPlayer_MovementServices
+    constexpr uintptr_t m_arrForceSubtickMoveWhen = 0x1B0;
+    constexpr uintptr_t m_flMaxspeed              = 0x1AC;
+    constexpr uintptr_t m_flCmdForwardMove        = 0x1A0;
+    constexpr uintptr_t m_flCmdLeftMove           = 0x1A4;
+    constexpr uintptr_t m_flForwardMove           = 0x1C0;
+    constexpr uintptr_t m_flLeftMove              = 0x1C4;
+
+    // CCSPlayer_MovementServices (subclass)
+    constexpr uintptr_t m_flStamina            = 0x694; // было 0x6A4
+    constexpr uintptr_t m_nLastJumpTick        = 0x700; // было 0x710
+    constexpr uintptr_t m_flVelMulAtJumpStart  = 0x6A8; // было 0x6B8
+    constexpr uintptr_t m_flStaminaAtJumpStart = 0x6A4; // бонус из дампа
+
+    // force jump (buttons.hpp -> jump, client.dll)
+    constexpr uintptr_t dwForceJump        = 0x209A510; // было 0x2058BE0
+
+    // engine2.dll
+    constexpr uintptr_t dwNetworkGameClient            = 0x90D4B0; // было 0x90B390
+    constexpr uintptr_t dwNetworkGameClient_clientTick = 0x378;    // dwNetworkGameClient_clientTickCount
+}
